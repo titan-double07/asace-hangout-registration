@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import { Toaster } from "@/components/ui/sonner";
 function App() {
   return (
     <BrowserRouter>
@@ -9,6 +10,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
+      <Toaster richColors />
     </BrowserRouter>
   );
 }

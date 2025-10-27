@@ -1,14 +1,19 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { PaymentModal } from "./PaymentModal";
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -16,14 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
+import { PaymentModal } from "./PaymentModal";
 
 // 🔹 Validation Schema
 
@@ -32,6 +33,7 @@ const formSchema = z.object({
   dob: z.string().min(1, "Date of Birth is required."),
   gender: z.enum(["male", "female", "other"]),
   hobbies: z.string().min(5, "Hobbies are required."),
+  email: z.string().email(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -42,7 +44,6 @@ export function RegistrationForm() {
   const [showModal, setShowModal] = useState(false);
   const [formValues, setFormValues] = useState<FormValues | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -65,44 +66,47 @@ export function RegistrationForm() {
 
   // 🔹 Upload proof to Supabase
 
-async function uploadPaymentProof(file: File, fullName: string) {
-  const fileExt = file.name.split(".").pop();
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, "0");
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const year = now.getFullYear();
-  const dateString = `${day}-${month}-${year}`;
+  async function uploadPaymentProof(file: File, fullName: string) {
+    const fileExt = file.name.split(".").pop();
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    const dateString = `${day}-${month}-${year}`;
 
-  const fileName = `${fullName.replace(/\s+/g, "_")}_${dateString}.${fileExt}`;
-  const filePath = fileName;
+    const fileName = `${fullName.replace(
+      /\s+/g,
+      "_"
+    )}_${dateString}.${fileExt}`;
+    const filePath = fileName;
 
-  // Upload file to private bucket
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from("payment_proofs")
-    .upload(filePath, file, { upsert: true }); // allow overwrite if name collides
+    // Upload file to private bucket
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("payment_proofs")
+      .upload(filePath, file, { upsert: true }); // allow overwrite if name collides
 
-  if (uploadError) {
-    console.error("❌ Upload error:", uploadError.message);
-    throw uploadError;
+    if (uploadError) {
+      toast.error("❌ Upload error:", { description: uploadError.message });
+      // cons.error("❌ Upload error:", { description: uploadError.message });
+      throw uploadError;
+    }
+
+    console.log("✅ Uploaded file:", uploadData?.path);
+
+    // Create signed URL (only if bucket is private)
+    const { data: signed, error: signError } = await supabase.storage
+      .from("payment_proofs")
+      .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7); // 7 days
+
+    if (signError) {
+      console.error("❌ Signed URL error:", signError.message);
+      throw signError;
+    }
+
+    console.log("✅ Signed URL:", signed.signedUrl);
+
+    return signed?.signedUrl ?? null;
   }
-
-  console.log("✅ Uploaded file:", uploadData?.path);
-
-  // Create signed URL (only if bucket is private)
-  const { data: signed, error: signError } = await supabase.storage
-    .from("payment_proofs")
-    .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7);
-
-  if (signError) {
-    console.error("❌ Signed URL error:", signError.message);
-    throw signError;
-  }
-
-  console.log("✅ Signed URL:", signed.signedUrl);
-
-  return signed?.signedUrl ?? null;
-}
-
 
   // 🔹 Handle form submit
 
@@ -118,7 +122,6 @@ async function uploadPaymentProof(file: File, fullName: string) {
     if (!formValues) return;
     setIsSubmitting(true);
 
-
     try {
       const proofUrl = await uploadPaymentProof(file, formValues.fullName);
       console.log("🚀 ~ handleProofUpload ~ proofUrl:", proofUrl);
@@ -127,6 +130,7 @@ async function uploadPaymentProof(file: File, fullName: string) {
       const { error } = await supabase.from("registrations").insert([
         {
           full_name: formValues.fullName,
+          email: formValues.email,
           dob: formValues.dob,
           gender: formValues.gender,
           hobbies: formValues.hobbies,
@@ -137,10 +141,10 @@ async function uploadPaymentProof(file: File, fullName: string) {
 
       if (error) throw error;
 
-      alert("✅ Registration submitted successfully!");
+      toast.success("Registration submitted successfully!");
     } catch (err) {
       console.error("❌ Error submitting registration:", err);
-      alert("Error uploading proof or saving data. Please try again.");
+      // toast.error("Error uploading proof or saving data. Please try again.");
     } finally {
       setShowModal(false);
       setIsSubmitting(false);
@@ -174,6 +178,25 @@ async function uploadPaymentProof(file: File, fullName: string) {
                   <Input
                     id={field.name}
                     placeholder="Your full name"
+                    {...field}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            {/* email */}
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    id={field.name}
+                    type="email"
+                    placeholder="Your email"
                     {...field}
                   />
                   {fieldState.invalid && (

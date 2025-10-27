@@ -1,26 +1,35 @@
 import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Field, FieldError, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
+import { API_URL } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 export default function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
-      onLogin();
-    } else {
-      setError("Invalid password");
+    try {
+      const res = await fetch(`${API_URL}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      
+      if (res.ok) onLogin();
+      else toast.error("Invalid admin password");
+    } catch {
+      setError("Failed to login");
     }
+
   };
 
   return (
@@ -43,8 +52,8 @@ export default function AdminLogin({ onLogin }: { onLogin: () => void }) {
             {error && <FieldError errors={[{ message: error }]} />}
           </Field>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : " Login"}
+            <Button type="submit" className="w-full">
+              {" Login"}
             </Button>
           </CardFooter>
         </form>

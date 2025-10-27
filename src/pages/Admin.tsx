@@ -3,17 +3,37 @@
 import AdminLogin from "@/components/AdminLogin";
 import AuthLayout from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/lib/supabaseClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { API_URL } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+type Registration = {
+  id: string;
+  created_at: string;
+  full_name: string;
+  dob: string | null;
+  gender: string | null;
+  hobbies: string | null;
+  payment_status:"pending" | "approved" | "rejected" | null;
+  payment_proof_url: string | null;
+  email: string;
+};
 export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
-  console.log("🚀 ~ Admin ~ loggedIn:", loggedIn)
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  console.log("🚀 ~ Admin ~ submissions:", submissions)
+  console.log("🚀 ~ Admin ~ loggedIn:", loggedIn);
+  const [submissions, setSubmissions] = useState<
+    Registration[]
+  >([]);
+  console.log("🚀 ~ Admin ~ submissions:", submissions);
   const [loading, setLoading] = useState(false);
 
   // 🔹 Fetch registrations after login
@@ -24,33 +44,38 @@ export default function Admin() {
   // 🔹 Fetch all registrations from Supabase
   async function fetchSubmissions() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("registrations")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("❌ Error fetching submissions:", error.message);
-    } else {
-      console.log("✅ Submissions fetched:", data);
-      setSubmissions(data || []);
+    try {
+      const res = await fetch(`${API_URL}/admin/submissions`);
+      const data = await res.json();
+      if (res.ok) {
+        setSubmissions(data);
+      } else {
+        console.error("❌ Fetch failed:", data.error);
+      }
+    } catch (err) {
+      console.error("❌ Network error:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
-
   // 🔹 Update payment_status (Approve / Reject)
   async function updateStatus(id: string, status: string) {
-    console.log("🚀 ~ updateStatus ~ status:", status)
-    const { error } = await supabase
-      .from("registrations")
-      .update({ payment_status: status })
-      .eq("id", id);
+    try {
+      const res = await fetch(`${API_URL}/admin/update-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
 
-    if (error) {
-      console.error("❌ Error updating status:", error.message);
-      alert("Failed to update status. Check console for details.");
-    } else {
-      fetchSubmissions();
+      if (!res.ok) {
+        toast.error( data.error || "Failed to update status");
+        toast.error("Failed to update status");
+      } else {
+        fetchSubmissions();
+      }
+    } catch (err) {
+      console.error("❌ Network error:", err);
     }
   }
 
@@ -58,7 +83,12 @@ export default function Admin() {
   if (!loggedIn) {
     return (
       <AuthLayout>
-        <AdminLogin onLogin={() => setLoggedIn(true)} />
+        <AdminLogin
+          onLogin={() => {
+            setLoggedIn(true);
+            toast.success("Admin logged in");
+          }}
+        />
       </AuthLayout>
     );
   }
@@ -68,7 +98,15 @@ export default function Admin() {
     <AuthLayout>
       <Card className="w-full sm:max-w-[1440px] mx-auto">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">Registrations</CardTitle>
+          <CardTitle className="text-xl font-semibold">
+            Registrations{" "}
+            <span className="text-sm"> ({submissions.length})</span>
+          </CardTitle>
+          <CardDescription>
+            <p className="text-muted-foreground text-sm">
+              Proof of payment is only available for 7 days
+            </p>
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
