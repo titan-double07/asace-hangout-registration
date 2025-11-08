@@ -138,6 +138,7 @@ export default function Admin() {
                 <thead>
                   <tr className="bg-muted/30 text-left">
                     <th className="px-3 py-2 font-medium">Full Name</th>
+                    <th className="px-3 py-2 font-medium">Email</th>
                     <th className="px-3 py-2 font-medium">DOB</th>
                     <th className="px-3 py-2 font-medium">Gender</th>
                     <th className="px-3 py-2 font-medium">Hobbies</th>
@@ -152,6 +153,7 @@ export default function Admin() {
                       key={s.id}
                       className="border-b hover:bg-muted/20 transition-colors [&_td]:whitespace-nowrap">
                       <td className="px-3 py-2">{s.full_name}</td>
+                      <td className="px-3 py-2">{s.email}</td>
                       <td className="px-3 py-2">{s.dob}</td>
                       <td className="px-3 py-2 capitalize">{s.gender}</td>
                       <td className="px-3 py-2">{s.hobbies}</td>
