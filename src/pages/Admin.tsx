@@ -15,6 +15,17 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Registration = {
   id: string;
@@ -23,18 +34,15 @@ type Registration = {
   dob: string | null;
   gender: string | null;
   hobbies: string | null;
-  payment_status:"pending" | "approved" | "rejected" | null;
+  payment_status: "pending" | "approved" | "rejected" | null;
   payment_proof_url: string | null;
   email: string;
 };
 export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
-  console.log("🚀 ~ Admin ~ loggedIn:", loggedIn);
-  const [submissions, setSubmissions] = useState<
-    Registration[]
-  >([]);
-  console.log("🚀 ~ Admin ~ submissions:", submissions);
+  const [submissions, setSubmissions] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // 🔹 Fetch registrations after login
   useEffect(() => {
@@ -60,6 +68,7 @@ export default function Admin() {
   }
   // 🔹 Update payment_status (Approve / Reject)
   async function updateStatus(id: string, status: string) {
+    setActionLoading(id); // Set loading state for the specific button
     try {
       const res = await fetch(`${API_URL}/admin/update-status`, {
         method: "POST",
@@ -69,13 +78,18 @@ export default function Admin() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error( data.error || "Failed to update status");
-        toast.error("Failed to update status");
+        toast.error(data.error || "Failed to update status");
       } else {
         fetchSubmissions();
+        toast.success(`Registration ${status}`);
       }
     } catch (err) {
       console.error("❌ Network error:", err);
+      toast.error("Network error occurred", {
+        description: (err as Error).message,
+      });
+    } finally {
+      setActionLoading(null); // Clear loading state
     }
   }
 
@@ -159,7 +173,7 @@ export default function Admin() {
                       <td className={cn("px-3 py-2 capitalize font-medium")}>
                         <span
                           className={cn(
-                            "flex items-center p-1 rounded-md text-xs",
+                            "flex items-center text-center justify-center p-1 rounded-md text-xs",
                             s.payment_status === "approved"
                               ? "bg-green-300/50 text-green-800"
                               : s.payment_status === "rejected"
@@ -170,19 +184,109 @@ export default function Admin() {
                         </span>
                       </td>
                       <td className="px-3 py-2 space-x-2 flex items-center">
-                        <Button
-                          className=" bg-green-600 hover:bg-green-600/50"
-                          size="icon"
-                          disabled={loading}
-                          onClick={() => updateStatus(s.id, "approved")}>
-                          <CheckIcon className="size-4  " />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => updateStatus(s.id, "rejected")}>
-                          <X className="size-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              className=" bg-green-600 hover:bg-green-600/50"
+                              size="icon"
+                              disabled={
+                                actionLoading === s.id ||
+                                s.payment_status !== "pending"
+                              }>
+                              {actionLoading === s.id ? (
+                                <svg
+                                  className="animate-spin h-5 w-5 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24">
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <CheckIcon className="size-4  " />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Approve Registration?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to approve this
+                                registration? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => updateStatus(s.id, "approved")}>
+                                Approve
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              disabled={
+                                actionLoading === s.id ||
+                                s.payment_status !== "pending"
+                              }>
+                              {actionLoading === s.id ? (
+                                <svg
+                                  className="animate-spin h-5 w-5 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24">
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <X className="size-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Reject Registration?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to reject this
+                                registration? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => updateStatus(s.id, "rejected")}>
+                                Reject
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </td>
                     </tr>
                   ))}

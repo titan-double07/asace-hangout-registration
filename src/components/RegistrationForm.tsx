@@ -144,7 +144,9 @@ export function RegistrationForm() {
       toast.success("Registration submitted successfully!");
     } catch (err) {
       console.error("❌ Error submitting registration:", err);
-      // toast.error("Error uploading proof or saving data. Please try again.");
+      toast.error("Error submitting registration", {
+        description: (err as Error).message,
+      });
     } finally {
       setShowModal(false);
       setIsSubmitting(false);
