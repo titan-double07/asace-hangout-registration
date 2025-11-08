@@ -191,10 +191,11 @@ export default function Admin() {
                             <Button
                               className=" bg-green-600 hover:bg-green-600/50"
                               size="icon"
-                              disabled={
-                                actionLoading === s.id ||
-                                s.payment_status !== "pending"
-                              }>
+                              // disabled={
+                              //   actionLoading === s.id ||
+                              //   s.payment_status !== "pending"
+                              // }
+                            >
                               {actionLoading === s.id ? (
                                 <svg
                                   className="animate-spin h-5 w-5 text-white"
