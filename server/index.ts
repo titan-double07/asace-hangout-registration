@@ -22,16 +22,13 @@ const EMAIL_PASS = process.env.EMAIL_PASS!;
 const transporter = nodemailer.createTransport({
   // service: "gmail", // or "smtp" for custom servers
   host: "smtp.gmail.com",
-  port: 465, // switch to 587
-  secure: true, // because port 587 uses false
+  port: 587, // switch to 587
+  secure: false, // because port 587 uses STARTTLS
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
-  connectionTimeout: 10000,
+  requireTLS: true,
 });
 
 // ✅ Test email configuration
