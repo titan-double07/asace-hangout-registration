@@ -28,6 +28,10 @@ const transporter = nodemailer.createTransport({
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 10000,
 });
 
 // ✅ Test email configuration
