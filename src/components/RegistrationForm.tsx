@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { PaymentModal } from "./PaymentModal";
+import flyer from "@/assets/image/flyer.jpg";
 
 // 🔹 Validation Schema
 
@@ -158,123 +159,134 @@ export function RegistrationForm() {
 
   return (
     <>
-      <Card className="w-full sm:max-w-lg">
-        <CardHeader>
-          <CardTitle>Register for the Hangout</CardTitle>
-          <CardDescription>
-            Fill out the form below to register for the hangout. After
-            successful payment verification, you will be added to the WhatsApp
-            group.
-          </CardDescription>
-        </CardHeader>
+      <div className="grid p-0 md:grid-cols-2 w-full max-w-7xl mx-auto">
+        <Card className="w-full sm:rounded-r-none  ">
+          <CardHeader>
+            <CardTitle>Register for the Hangout</CardTitle>
+            <CardDescription>
+              Fill out the form below to register for the hangout. After
+              successful payment verification, you will be added to the WhatsApp
+              group.
+            </CardDescription>
+          </CardHeader>
 
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Full Name */}
-            <Controller
-              name="fullName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
-                  <Input
-                    id={field.name}
-                    placeholder="Your full name"
-                    {...field}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            {/* email */}
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                  <Input
-                    id={field.name}
-                    type="email"
-                    placeholder="Your email"
-                    {...field}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+          <CardContent className="sm:max-w-lg w-full mx-auto">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Full Name */}
+              <Controller
+                name="fullName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
+                    <Input
+                      id={field.name}
+                      placeholder="Your full name"
+                      {...field}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              {/* email */}
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="email"
+                      placeholder="Your email"
+                      {...field}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Date of Birth */}
-            <Controller
-              name="dob"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Date of Birth</FieldLabel>
-                  <Input id={field.name} type="date" {...field} />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              {/* Date of Birth */}
+              <Controller
+                name="dob"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Date of Birth</FieldLabel>
+                    <Input id={field.name} type="date" {...field} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Gender */}
-            <Controller
-              name="gender"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Gender</FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id={field.name}>
-                      <SelectValue placeholder="Select a gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              {/* Gender */}
+              <Controller
+                name="gender"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Gender</FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id={field.name}>
+                        <SelectValue placeholder="Select a gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Hobbies */}
-            <Controller
-              name="hobbies"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Hobbies</FieldLabel>
-                  <Textarea
-                    id={field.name}
-                    placeholder="What are your hobbies?"
-                    {...field}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              {/* Hobbies */}
+              <Controller
+                name="hobbies"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Hobbies</FieldLabel>
+                    <Textarea
+                      id={field.name}
+                      placeholder="What are your hobbies?"
+                      {...field}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Proceed to Payment"}
-              </Button>
-            </CardFooter>
-          </form>
-        </CardContent>
-      </Card>
-
+              <CardFooter>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Proceed to Payment"}
+                </Button>
+              </CardFooter>
+            </form>
+          </CardContent>
+        </Card>
+        <div className=" relative hidden md:block">
+          <img
+            src={flyer}
+            alt="Image"
+            className="rounded-xl sm:rounded-l-none  inset-0 h-full w-full object-fill "
+          />
+        </div>
+      </div>
       <PaymentModal
         open={showModal}
         onClose={() => setShowModal(false)}

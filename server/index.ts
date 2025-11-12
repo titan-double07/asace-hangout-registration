@@ -163,7 +163,6 @@ app.post("/api/admin/update-status", async (req, res) => {
     res.status(500).json({
       error: true,
       message: errorMessage, // Use SendGrid's actual error message
-    
     });
   }
 
