@@ -24,7 +24,7 @@ export function PaymentModal({
   open,
   onClose,
   onProofUpload,
-  isLoading
+  isLoading,
 }: PaymentModalProps) {
   const [file, setFile] = useState<File | null>(null);
 
@@ -46,15 +46,15 @@ export function PaymentModal({
         <div className="space-y-4">
           <div>
             <Label>Account Name</Label>
-            <p className="text-sm font-medium">Hangout Committee</p>
+            <p className="text-sm font-medium">Ndudim Ebenezer</p>
           </div>
           <div>
             <Label>Account Number</Label>
-            <p className="text-sm font-medium">1234567890</p>
+            <p className="text-sm font-medium">3002383670</p>
           </div>
           <div>
             <Label>Bank</Label>
-            <p className="text-sm font-medium">GTBank</p>
+            <p className="text-sm font-medium">KUDA MICROFINANCE</p>
           </div>
 
           <div className="mt-4">
@@ -69,7 +69,7 @@ export function PaymentModal({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleUpload} disabled={!file || isLoading} >
+          <Button onClick={handleUpload} disabled={!file || isLoading}>
             {isLoading ? "Uploading..." : "Upload Proof of Payment"}
           </Button>
         </DialogFooter>
